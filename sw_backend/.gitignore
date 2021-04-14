@@ -1,0 +1,7 @@
+node_modules
+.serverless
+.webpack
+venv/
+.requirements.zip
+lambda-layer
+tensor

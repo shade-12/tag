@@ -1,0 +1,11 @@
+root = true
+
+# Javascript
+[*.{js,py}]
+indent_size = 4
+indent_style = tab
+
+# YAML
+[*.yml]
+indent_style = space
+indent_size = 2

@@ -1,0 +1,14 @@
+.leaflet-container {
+    height: calc(50vh);
+    width: 100%;
+    min-width: 1px;
+    min-height: 1px;
+}
+
+.mapButtonGroup {
+    margin: 15px 15px 25px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 500000;
+}

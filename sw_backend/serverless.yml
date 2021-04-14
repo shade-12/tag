@@ -1,0 +1,352 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: tag-backend
+# app and org for use with dashboard.serverless.com
+app: tag-backend-app
+org: andrewshieh7379
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: "2"
+
+provider:
+  name: aws
+  lambdaHashingVersion: 20201221
+  stage: dev
+  region: us-west-2
+  environment:
+    userTagTable: ${self:custom.userTagTable}
+    sensorTable: ${self:custom.sensorTable}
+    socketTable: ${self:custom.socketTable}
+    notificationTable: ${self:custom.notificationTable}
+    region: us-west-2
+    imageUploadBucket: ${self:custom.imageUploadBucket}
+    behaviorModelBucket: ${self:custom.behaviorModelBucket}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+        - s3:*
+      Resource: "*"
+
+plugins:
+  - serverless-webpack
+package:
+  individually: true
+  exclude:
+    - venv/**
+
+custom:
+  userTagTable: user-tag
+  sensorTable: sensor-reading
+  socketTable: websocket-connection
+  notificationTable: notification
+  imageUploadBucket: tag-image-upload-bucket
+  behaviorModelBucket: behavior-model-bucket
+  webpack:
+    packager: npm
+    includeModules: false
+    excludeFiles: lambdas/**/*.py
+
+functions:
+  getUserPet:
+    runtime: nodejs12.x
+    handler: lambdas/functions/getUserPet.handler
+    events:
+      - http:
+          path: users/{username}/tags/{tagId}
+          method: GET
+          cors: true
+
+  getUserPetAll:
+    runtime: nodejs12.x
+    handler: lambdas/functions/getUserPet.handler
+    events:
+      - http:
+          path: users/{username}/tags/
+          method: GET
+          cors: true
+
+  createTag:
+    runtime: nodejs12.x
+    handler: lambdas/functions/createTag.handler
+    events:
+      - http:
+          path: users/{username}/tags
+          method: POST
+          cors: true
+          request:
+            parameters:
+              paths:
+                username: true
+
+  updateTag:
+    runtime: nodejs12.x
+    handler: lambdas/functions/updateTag.handler
+    events:
+      - http:
+          path: users/{username}/tags
+          method: PATCH
+          cors: true
+          request:
+            parameters:
+              paths:
+                username: true
+
+  getSensorData:
+    runtime: nodejs12.x
+    handler: lambdas/functions/getSensorData.handler
+    events:
+      - http:
+          path: tags/{tagId}/sensors
+          method: GET
+          cors: true
+          request:
+            parameters:
+              paths:
+                tagId: true
+              querystrings:
+                t: false
+
+  createSensorData:
+    runtime: nodejs12.x
+    handler: lambdas/functions/createSensorData.handler
+    timeout: 300
+    events:
+      - http:
+          path: tags/{tagId}/sensors
+          method: POST
+          cors: true
+          request:
+            parameters:
+              paths:
+                tagId: true
+
+  updateSensorData:
+    runtime: nodejs12.x
+    handler: lambdas/functions/updateSensorData.handler
+    events:
+      - http:
+          path: sensors
+          method: PATCH
+          cors: true
+
+  getNotification:
+    runtime: nodejs12.x
+    handler: lambdas/functions/getNotification.handler
+    events:
+      - http:
+          path: notifications/{username}
+          method: GET
+          cors: true
+          request:
+            parameters:
+              paths:
+                username: true
+
+  createUser:
+    runtime: nodejs12.x
+    handler: lambdas/functions/createUser.handler
+    events:
+      - cognitoUserPool:
+          pool: ${self:provider.stage}-tag-user-pool
+          trigger: PostConfirmation
+          existing: true
+
+  petImageUpload:
+    runtime: nodejs12.x
+    handler: lambdas/functions/petImageUpload.handler
+    events:
+      - http:
+          path: pet-img
+          method: POST
+          cors: true
+
+  # Websocket functions
+  onConnect:
+    runtime: nodejs12.x
+    handler: lambdas/websockets/onConnect.handler
+    events:
+      - websocket:
+          route: $connect
+
+  onDisconnect:
+    runtime: nodejs12.x
+    handler: lambdas/websockets/onDisconnect.handler
+    events:
+      - websocket:
+          route: $disconnect
+
+  handleSensorUpdate:
+    runtime: nodejs12.x
+    handler: lambdas/websockets/handleSensorUpdate.handler
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt: [sensorReadingTable, StreamArn]
+
+# you can add CloudFormation resource templates here
+resources:
+  Resources:
+    userTagTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.userTagTable}
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+        GlobalSecondaryIndexes:
+          - IndexName: ReverseLookupIndex
+            KeySchema:
+              - AttributeName: SK
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 2
+              WriteCapacityUnits: 2
+
+    sensorReadingTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.sensorTable}
+        AttributeDefinitions:
+          - AttributeName: tagId
+            AttributeType: S
+          - AttributeName: readingId
+            AttributeType: S
+          - AttributeName: time
+            AttributeType: N
+        KeySchema:
+          - AttributeName: tagId
+            KeyType: HASH
+          - AttributeName: readingId
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 10
+          WriteCapacityUnits: 10
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+        LocalSecondaryIndexes:
+          - IndexName: DateLocalIndex
+            KeySchema:
+              - AttributeName: tagId
+                KeyType: HASH
+              - AttributeName: time
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    SocketTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.socketTable}
+        AttributeDefinitions:
+          - AttributeName: connectionId
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+        GlobalSecondaryIndexes:
+          - IndexName: UsernameIndex
+            KeySchema:
+              - AttributeName: username
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 2
+              WriteCapacityUnits: 2
+        TimeToLiveSpecification:
+          AttributeName: expDate
+          Enabled: true
+
+    NotificationTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.notificationTable}
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+          - AttributeName: time
+            AttributeType: N
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+          - AttributeName: time
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 4
+          WriteCapacityUnits: 4
+
+    TagUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:provider.stage}-tag-user-pool
+        AutoVerifiedAttributes:
+          - email
+        AliasAttributes:
+          - email
+        Schema:
+          - Name: given_name
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+          - Name: family_name
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+          - Name: email
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+
+    TagUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:provider.stage}-tag-user-pool-client
+        UserPoolId:
+          Ref: TagUserPool
+        GenerateSecret: false
+        ExplicitAuthFlows:
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+
+    ImageUploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.imageUploadBucket}
+        AccessControl: PublicRead
+
+    BehaviorModelBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.behaviorModelBucket}
+        AccessControl: Private
