@@ -7,7 +7,7 @@ This project aims to improve the efficacy of wildlife conservation by providing 
 
 ## Architecture Overview
 
-![Architecture Overview](https://github.com/shade-12/tag/blob/main/docs/img/Architecture_Overview.png?raw=true)
+![Architecture Overview](https://github.com/shade-12/tag/blob/main/docs/img/Architecture_Overview.jpg?raw=true)
 
 
 ## Features
