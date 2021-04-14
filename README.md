@@ -10,7 +10,7 @@ This project aims to improve the efficacy of wildlife conservation by providing 
 ![Architecture Overview](https://github.com/shade-12/tag/blob/main/docs/img/Architecture_Overview.png?raw=true)
 
 
-### Features
+## Features
 
 1. Location tracking
  - Real-time GPS coordinates display for every registered tag on a map
@@ -32,7 +32,7 @@ This project aims to improve the efficacy of wildlife conservation by providing 
 - Real-time notification is sent to user when the detected temperature goes beyond 50 degree celcius
 
 
-### Team
+## Team
 
 This is a project built by Group 10 for CPEN 391 Winter 2021 @ UBC, taught by Professor Cristian Grecu.
 
