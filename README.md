@@ -11,7 +11,6 @@ This project aims to improve the efficacy of wildlife conservation by providing 
 
 
 ## Features
-
 ### 1. Location tracking
  - Real-time GPS coordinates display for every registered tag on a map
 
@@ -33,7 +32,6 @@ This project aims to improve the efficacy of wildlife conservation by providing 
 
 
 ## Team
-
 This is a project built by Group 10 for CPEN 391 Winter 2021 @ UBC, taught by Professor Cristian Grecu.
 - [Aayush Bisht](https://github.com/bisht10)
 - [Andrew Shieh](https://github.com/Shiehand)
