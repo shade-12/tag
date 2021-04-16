@@ -8,7 +8,9 @@ Contains 3 main pages:
 
 ## Demo
 The following credential can be used to access the [Demo](https://tagwebsite-20210412161653-hostingbucket-dev.s3-us-west-2.amazonaws.com/index.html)
+
 Username: Vincent
+
 Password: Passw0rd!
    
 ## Features
