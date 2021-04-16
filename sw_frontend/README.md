@@ -7,10 +7,8 @@ Contains 3 main pages:
    * **./pages/petForm.tsx** : The animal registration paged where users can register their animal along with its tag
 
 ## Demo
-The following credential can be used to access the [Demo](https://tagwebsite-20210412161653-hostingbucket-dev.s3-us-west-2.amazonaws.com/index.html)
-
-Username: Vincent
-
+The following credential can be used to access the [Demo](https://tagwebsite-20210412161653-hostingbucket-dev.s3-us-west-2.amazonaws.com/index.html) \
+Username: Vincent \
 Password: Passw0rd!
    
 ## Features
