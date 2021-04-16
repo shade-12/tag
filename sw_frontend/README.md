@@ -5,6 +5,11 @@ Contains 3 main pages:
    * **./pages/home.tsx** : The landing page where the user can see the aggregate informations & a list of all registered animal 
    * **./pages/pets.tsx** : Detailed view of a specific animal. This paged can only be accessed through clicking an icon in the home page because args are passed as props
    * **./pages/petForm.tsx** : The animal registration paged where users can register their animal along with its tag
+
+## Demo
+The following credential can be used to access the [Demo]: https://tagwebsite-20210412161653-hostingbucket-dev.s3-us-west-2.amazonaws.com/index.html
+Username: Vincent
+Password: Passw0rd!
    
 ## Features
 * **Real-time data & Notifications**: Each page establishes a web-socket connection with the AWS serverless backend. These web-socket will send a message if there is an alert & the webpage will automatically generate a notification toast. This design can also be easily extended to run in the device's background using service worker although service worker feature has not been implemented as of this version.
